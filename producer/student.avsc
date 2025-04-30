@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "Student",
+  "fields": [
+    {"name": "name", "type": "string"},
+    {"name": "age", "type": "int"},
+    {"name": "grade", "type": "string"}
+  ]
+}
