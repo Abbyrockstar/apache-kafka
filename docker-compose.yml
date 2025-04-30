@@ -1,0 +1,16 @@
+#cloud-config
+packages:
+  - git
+  - docker.io
+  - curl
+
+runcmd:
+  - systemctl start docker
+  - systemctl enable docker
+  - curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  - chmod +x /usr/local/bin/docker-compose
+  - mkdir -p /opt/kafka
+  - cd /opt/kafka
+  - git clone https://github.com/YOUR_USERNAME/kafka-app.git .
+  - docker-compose up -d
+
