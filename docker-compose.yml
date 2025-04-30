@@ -31,19 +31,45 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/subjects || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  init-topics:
+    image: bitnami/kafka:3.7
+    container_name: init-topics
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command: >
+      "
+      kafka-topics.sh --create --if-not-exists --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic students &&
+      sleep 5
+      "
 
   producer:
     build: ./producer
     container_name: kafka-producer
     depends_on:
-      - kafka
-      - schema-registry
-      - init-topics
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+      init-topics:
+        condition: service_completed_successfully
 
   consumer:
     build: ./consumer
     container_name: kafka-consumer
     depends_on:
-      - kafka
-      - schema-registry
-
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+      init-topics:
+        condition: service_completed_successfully
